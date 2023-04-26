@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 import os
+from tqdm import tqdm
 
 personalize = True
 if personalize:
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     for epoch in range(20):
         train_loss = 0.0
         total = 0.0
-        for i, data in enumerate(trainloader, 0):
+        for i, data in tqdm(enumerate(trainloader, 0), desc="iters"):
             if i == 0 and personalize:
                 print(data[0].shape)
                 print(data[2].shape)
