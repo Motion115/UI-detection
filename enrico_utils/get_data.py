@@ -35,7 +35,7 @@ def _add_screen_elements(tree, element_list):
 class EnricoDataset(Dataset):
     """Implements torch dataset class for ENRICO dataset."""
     
-    def __init__(self, data_dir, mode="train", noise_level=0, img_noise=False, wireframe_noise=False, img_dim_x=128, img_dim_y=256, random_seed=42, train_split=0.65, val_split=0.15, test_split=0.2, normalize_image=False, seq_len=64):
+    def __init__(self, data_dir, mode="train", noise_level=0, img_noise=False, wireframe_noise=False, img_dim_x=256, img_dim_y=256, random_seed=42, train_split=0.65, val_split=0.15, test_split=0.2, normalize_image=False, seq_len=64):
         """Instantiate ENRICO dataset.
 
         Args:
@@ -178,7 +178,7 @@ class EnricoDataset(Dataset):
         return [screenImg, screenWireframeImg, screenLabel]
 
 
-def get_dataloader(data_dir, batch_size=32, num_workers=0, train_shuffle=True, return_class_weights=True):
+def get_dataloader(data_dir, batch_size=8, num_workers=0, train_shuffle=True, return_class_weights=True):
     """Get dataloaders for this dataset.
 
     Args:
@@ -227,6 +227,7 @@ def get_dataloader(data_dir, batch_size=32, num_workers=0, train_shuffle=True, r
 
     dl_train = DataLoader(ds_train, num_workers=num_workers,
                           sampler=sampler, batch_size=batch_size)
+
     # dl_train = DataLoader(ds_train, shuffle=train_shuffle, num_workers=num_workers, batch_size=batch_size)
     dl_val = DataLoader(ds_val, shuffle=False,
                         num_workers=num_workers, batch_size=batch_size)
