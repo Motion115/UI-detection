@@ -1,3 +1,5 @@
+# https://www.jianshu.com/p/bebfb6170e00
+
 from main import *
 #from enrico_utils.get_data import get_dataloader
 #(trainloader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
@@ -8,24 +10,26 @@ classes = ["Text", "Text Button", "Icon", "Card", "Drawer", "Web View", "List It
 if __name__ == '__main__':
 
     # 加载效果最好的网络模型
-    checkpoint = torch.load('./checkpoint/enrico_epoch_2.ckpt')
+    checkpoint = torch.load('./checkpoint/enrico_epoch_20.ckpt')
     net.load_state_dict(checkpoint['net'])
     start_epoch = checkpoint['epoch']
     
     # print(test_loader['image'])
-    
-    for i, testset in enumerate(test_loader['image'], 0):
-        '''
+
+    testbench = test_loader['image']
+    # for i, data in tqdm(enumerate(trainloader, 0), desc="iters"):
+    for i, testset in enumerate(testbench, 0): 
         for j, data in enumerate(testset, 0):
-            #print(data)
-            test_image = data[0]
-            test_label = data[2]
+            test_image, test_label = data[0], data[2]
+            test_image, test_label = test_image.to(device), test_label.to(device)
             output = net(test_image)
             _, predicted = torch.max(output, 1)
-            print('预测：' + ' '.join('%5s' % classes[predicted[i]] for i in range(1)))
-            print('实际：' + ' '.join('%5s' % classes[test_label[i]] for i in range(1)))
+            print(predicted)
+            print(test_label.data)
+            #print('预测：' + ' '.join('%5s' % classes[predicted[i]] for i in range(1)))
+            #print('实际：' + ' '.join('%5s' % classes[test_label[i]] for i in range(1)))
+            break
         break
-        '''
 
     exit()
     # 查看前十张图片的预测效果
