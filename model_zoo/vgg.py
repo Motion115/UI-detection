@@ -4,11 +4,8 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 
-
-
-# 定义网络
 class VGG(nn.Module):
-        # VGG16配置
+    # configure VGG 16
     cfg = {'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512,
                     521, 'M', 512, 512, 512, 'M']}
     def __init__(self, net_name):
