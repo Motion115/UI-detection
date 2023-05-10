@@ -8,6 +8,10 @@ import torch.nn as nn
 import os
 from tqdm import tqdm
 
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
 from enrico_utils.get_data import get_dataloader
 (train_loader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
 
@@ -16,7 +20,7 @@ configurations = {
     'train_batch_size': 8,
     'val_batch_size': 8,
     'test_batch_size': 8,
-    'num_epochs': 20,
+    'num_epochs': 2,
     'learning_rate': 0.001,
     'weight_decay': 0.0005,
     'is_continue': False,
@@ -87,6 +91,7 @@ if __name__ == '__main__':
     for epoch in range(start_epoch, start_epoch + configurations['num_epochs']):
         loss = train(train_loader)
         acc = validation(val_loader = val_loader, current_net = net.state_dict())
+        writer.add_scalar("Loss/train", loss, epoch)
 
         print('epoch:{}, loss:{}'.format(epoch + 1, loss))
         # only store the models that imporve on validation and drop in loss
@@ -107,3 +112,4 @@ if __name__ == '__main__':
             torch.save(state, './checkpoint/enrico_epoch_{}.ckpt'.format(epoch+1))
 
     print('Finished Training!')
+    writer.flush()

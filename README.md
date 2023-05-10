@@ -35,3 +35,9 @@ The methods can be found in the folder model_zoo, where all the model structures
 
 The pretrained model will be made public when available. The model will be made public through web servies outside github, since the file is too large that requires git-lfs.
 
+Check the training process using tensorboard:
+
+```
+tensorboard --logdir=runs
+```
+
