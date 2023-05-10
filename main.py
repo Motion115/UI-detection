@@ -8,77 +8,102 @@ import torch.nn as nn
 import os
 from tqdm import tqdm
 
-personalize = True
-if personalize:
-    from enrico_utils.get_data import get_dataloader
-    (trainloader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
-else:
-    transform = transforms.Compose(
-    [transforms.ToTensor(),     # 将图片转成tensor
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])   # 将图片有[0,1]转成[-1,1]
+from enrico_utils.get_data import get_dataloader
+(train_loader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
 
-    trainset = torchvision.datasets.CIFAR10(root='./cv/cifar10',
-                                            train=True,
-                                            download=True,
-                                            transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset,
-                                            batch_size=32,
-                                            shuffle=True,
-                                            num_workers=0)
+configurations = {
+    'net': 'VGG16',
+    'train_batch_size': 8,
+    'val_batch_size': 8,
+    'test_batch_size': 8,
+    'num_epochs': 20,
+    'learning_rate': 0.001,
+    'weight_decay': 0.0005,
+    'is_continue': False,
+    'best_model': './checkpoint/enrico_epoch_20.ckpt'
+}
 
-    testset = torchvision.datasets.CIFAR10(root='./cv/cifar10',
-                                            train=False,
-                                            download=True,
-                                            transform=transform)
-    testloader = torch.utils.data.DataLoader(testset,
-                                            batch_size=32,
-                                            shuffle=False,
-                                            num_workers=0)
-
-#print(train_loader)
-
-
-
-
-# 在GPU上训练
+# load on gpu if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-net = VGG('VGG16').to(device)
+net = VGG(configurations['net']).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+# use adam optimizer
+optimizer = optim.Adam(net.parameters(), lr=configurations['learning_rate'], weight_decay=configurations['weight_decay'])
 
+def configure_trian(is_continue, net, current_best_model):
+    if is_continue:
+        # load current best model
+        checkpoint = torch.load(current_best_model)
+        net.load_state_dict(checkpoint['net'])
+        start_epoch = checkpoint['epoch']
+        loss = checkpoint['loss']
+        val_acc = checkpoint['val_acc']
+        print('Start training from epoch {}...' .format(start_epoch+1))
+    else:
+        start_epoch = 0
+        loss = 10000
+        val_acc = 0
+        print('Start training from scratch...')
+    return start_epoch, loss, val_acc
+
+def early_stopping():
+    pass
+
+def train(train_loader):
+    train_loss = 0.0
+    total_sample = 0.0
+    for i, data in tqdm(enumerate(train_loader, 0), desc="iters"):
+        inputs, labels = data[0], data[2]
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+        total_sample += labels.size(0)
+    loss = train_loss / total_sample
+    return loss
+
+def validation(val_loader, current_net):
+    val_total, val_correct = 0, 0
+    for i, data in tqdm(enumerate(val_loader, 0), desc="validation"):   
+        val_image, val_label = data[0], data[2]
+        val_image, val_label = val_image.to(device), val_label.to(device)
+        output = net(val_image)
+        _, predicted = torch.max(output, 1)
+        val_total += val_label.size(0)
+        val_correct += (predicted == val_label).sum().item()   
+    acc = 100 * val_correct / val_total 
+    print('Current Acc:', acc, '%')
+    return acc
 
 if __name__ == '__main__':
-    # 训练网络，并将每个epoch的结果保存下来
-    for epoch in range(20):
-        train_loss = 0.0
-        total = 0.0
-        for i, data in tqdm(enumerate(trainloader, 0), desc="iters"):
-            if i == 0 and personalize:
-                print(data[0].shape)
-                print(data[2].shape)
-            elif i == 0 and not personalize:
-                print(data[0].shape)
-                print(data[1].shape)
-            inputs, labels = data[0], data[2]
-            inputs, labels = inputs.to(device), labels.to(device)
-            optimizer.zero_grad()
+    start_epoch, bench_loss, bench_val_acc = configure_trian(configurations['is_continue'], net, configurations['best_model'])
 
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
+    for epoch in range(start_epoch, start_epoch + configurations['num_epochs']):
+        loss = train(train_loader)
+        acc = validation(val_loader = val_loader, current_net = net.state_dict())
 
-            loss.backward()
-            optimizer.step()
+        print('epoch:{}, loss:{}'.format(epoch + 1, loss))
+        # only store the models that imporve on validation and drop in loss
+        if acc > bench_val_acc and loss < bench_loss:
+            bench_loss = loss
+            bench_val_acc = acc
 
-            train_loss += loss.item()
-            total += labels.size(0)
+            print('Saving best model...')
+            state = {
+                'net': net.state_dict(),
+                'epoch': epoch+1,
+                'loss': loss,
+                'val_acc': acc
+            }
 
-        print('epoch:{}, loss:{}'.format(epoch+1, train_loss/total))
-        print('Saving epoch {} model...' .format(epoch+1))
-        state = {
-            'net': net.state_dict(),
-            'epoch': epoch+1
-        }
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/enrico_epoch_{}.ckpt' .format(epoch+1))
+            if not os.path.isdir('checkpoint'):
+                os.mkdir('checkpoint')
+            torch.save(state, './checkpoint/enrico_epoch_{}.ckpt'.format(epoch+1))
+
     print('Finished Training!')

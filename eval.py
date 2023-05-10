@@ -1,18 +1,13 @@
 # https://www.jianshu.com/p/bebfb6170e00
 
 from main import *
-#from enrico_utils.get_data import get_dataloader
-#(trainloader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
 
 if __name__ == '__main__':
-
-    # 加载效果最好的网络模型
+    # load current best model
     checkpoint = torch.load('./checkpoint/enrico_epoch_20.ckpt')
     net.load_state_dict(checkpoint['net'])
     start_epoch = checkpoint['epoch']
     
-    # print(test_loader['image'])
-
     testbench = test_loader['image']    
     correct = 0
     total = 0
