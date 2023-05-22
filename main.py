@@ -1,99 +1,45 @@
-from model_zoo.vgg import VGG, VGG16
+from models.cv.vgg import VGG
+from models.cv.vit import ViT
 
 import torch
-import torchvision
-import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 import os
-from tqdm import tqdm
+
+from utils import *
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter()
-
 from enrico_utils.get_data import get_dataloader
-(train_loader, val_loader, test_loader), weights = get_dataloader("enrico_corpus")
 
-configurations = {
-    'net': 'VGG16',
-    'train_batch_size': 8,
-    'val_batch_size': 8,
-    'test_batch_size': 8,
-    'num_epochs': 2,
-    'learning_rate': 0.001,
-    'weight_decay': 0.0005,
-    'is_continue': False,
-    'best_model': './checkpoint/enrico_epoch_1.ckpt'
-}
+def operations(config: dict, net, is_test: bool = False):
+    writer = SummaryWriter()
+    # load on gpu if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    criterion = nn.CrossEntropyLoss()
 
-# load on gpu if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-net = VGG(configurations['net']).to(device)
-#net = VGG16(num_classes=20).to(device)
-criterion = nn.CrossEntropyLoss()
-# use adam optimizer
-optimizer = optim.Adam(net.parameters(), lr=configurations['learning_rate'], weight_decay=configurations['weight_decay'])
-
-def configure_trian(is_continue, net, current_best_model):
-    if is_continue:
-        # load current best model
-        checkpoint = torch.load(current_best_model)
-        net.load_state_dict(checkpoint['net'])
-        start_epoch = checkpoint['epoch']
-        loss = checkpoint['loss']
-        val_acc = checkpoint['val_acc']
-        print('Start training from epoch {}...' .format(start_epoch+1))
-    else:
-        start_epoch = 0
-        loss = 10000
-        val_acc = 0
-        print('Start training from scratch...')
-    return start_epoch, loss, val_acc
-
-def early_stopping():
-    pass
-
-def train(train_loader):
-    train_loss = 0.0
-    total_sample = 0.0
-    for i, data in tqdm(enumerate(train_loader, 0), desc="iters"):
-        inputs, labels = data[0], data[2]
-        inputs, labels = inputs.to(device), labels.to(device)
-        optimizer.zero_grad()
-
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-
-        loss.backward()
-        optimizer.step()
-
-        train_loss += loss.item()
-        total_sample += labels.size(0)
-    loss = train_loss / total_sample
-    return loss
-
-def validation(val_loader):
-    val_total, val_correct = 0, 0
-    for i, data in tqdm(enumerate(val_loader, 0), desc="validation"):   
-        val_image, val_label = data[0], data[2]
-        val_image, val_label = val_image.to(device), val_label.to(device)
-        output = net(val_image)        
-        _, predicted = torch.max(output, 1)
-        val_total += val_label.size(0)
-        val_correct += (predicted == val_label).sum().item()   
-    acc = 100 * val_correct / val_total 
-    print('Current Acc:', acc, '%')
-    return acc
-
-if __name__ == '__main__':
-    start_epoch, bench_loss, bench_val_acc = configure_trian(configurations['is_continue'], net, configurations['best_model'])
+    (train_loader, val_loader, test_loader), weights = get_dataloader("enrico_corpus", 
+        img_dim_x=config['img_dim'], img_dim_y=config['img_dim'], 
+        batch_size=config['batch_size'])
+    # initialize net
+    net.to(device)
     
-    for epoch in range(start_epoch, start_epoch + configurations['num_epochs']):
-        loss = train(train_loader)
-        #loss = train(val_loader)
-        acc = validation(val_loader = val_loader)
+    if is_test:
+        print("Testing " + config["net"] + "...")
+        test(config['continue_on'], test_loader, net, device)
+        return
+    
+    print("Training " + config["net"] + "...")
+
+    # use adam optimizer
+    optimizer = optim.Adam(net.parameters(), lr=config['learning_rate'], weight_decay=config['weight_decay'])
+    start_epoch, bench_loss, bench_val_acc = configure_trian(config['is_continue'], net, config['continue_on'])
+    for epoch in range(start_epoch, start_epoch + config['num_epochs']):
+        loss = train(device, train_loader, net, optimizer, criterion)
+        #loss = train(device, val_loader, net, optimizer, criterion)
+        acc = validation(device, val_loader, net)
         writer.add_scalar("Loss/train", loss, epoch)
+        writer.add_scalar("Acc/validation", acc, epoch)
 
         print('epoch:{}, loss:{}'.format(epoch + 1, loss))
         # only store the models that imporve on validation and drop in loss
@@ -109,9 +55,46 @@ if __name__ == '__main__':
                 'val_acc': acc
             }
 
-            if not os.path.isdir('checkpoint'):
-                os.mkdir('checkpoint')
-            torch.save(state, './checkpoint/enrico_epoch_{}.ckpt'.format(epoch+1))
+            if not os.path.isdir(config['weights']):
+                os.mkdir(config['weights'])
+            torch.save(state, config['weights'] + 'enrico_epoch_{}.ckpt'.format(epoch+1))
 
     print('Finished Training!')
     writer.flush()
+
+def vgg_operations(is_test: bool = False):
+    vgg_config = {
+        'net': 'VGG16',
+        'batch_size': 8,
+        'num_epochs': 2,
+        'img_dim': 256,
+        'learning_rate': 0.001,
+        'weight_decay': 0.0005,
+        'is_continue': True,
+        'weights': './weights/vgg/',
+        'continue_on': './weights/vgg/enrico_epoch_1.ckpt'
+    }
+    net = VGG(num_classes=20)
+    operations(vgg_config, net, is_test=is_test)
+
+def vit_operations(is_test: bool = False):
+    print("Training ViT...")
+    vit_config = {
+        'net': 'ViT',
+        'batch_size': 4,
+        'num_epochs': 2,
+        'img_dim': 224,
+        'learning_rate': 0.001,
+        'weight_decay': 0.0005,
+        'is_continue': False,
+        'weights': './weights/vit/',
+        'continue_on': './weights/vit/enrico_epoch_1.ckpt'
+    }
+    net = ViT(num_classes=20)
+    operations(vit_config, net, is_test=is_test)
+
+if __name__ == '__main__':
+    vgg_operations(is_test = True)
+    
+    
+    

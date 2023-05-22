@@ -178,7 +178,7 @@ class EnricoDataset(Dataset):
         return [screenImg, screenWireframeImg, screenLabel]
 
 
-def get_dataloader(data_dir, batch_size=8, num_workers=0, train_shuffle=True, return_class_weights=True):
+def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, train_shuffle=True, return_class_weights=True):
     """Get dataloaders for this dataset.
 
     Args:
@@ -191,8 +191,8 @@ def get_dataloader(data_dir, batch_size=8, num_workers=0, train_shuffle=True, re
     Returns:
         tuple: Tuple of ((train dataloader, validation dataloader, test dataloader), class_weights) if return_class_weights, otherwise just the dataloaders
     """
-    ds_train = EnricoDataset(data_dir, mode="train")
-    ds_val = EnricoDataset(data_dir, mode="val")
+    ds_train = EnricoDataset(data_dir, mode="train", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
+    ds_val = EnricoDataset(data_dir, mode="val", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
 
     targets = []
     class_counter = Counter()
@@ -239,7 +239,7 @@ def get_dataloader(data_dir, batch_size=8, num_workers=0, train_shuffle=True, re
     # Add image noise
     for i in range(11):
         ds_test_img.append(EnricoDataset(
-            data_dir, img_noise=True, noise_level=i/10))
+            data_dir, img_noise=True, noise_level=i/10, img_dim_x=img_dim_x, img_dim_y=img_dim_y))
     dl_test['image'] = [DataLoader(test, shuffle=False, num_workers=num_workers,
                                    batch_size=batch_size) for test in ds_test_img]
     # Add wireframe image noise
