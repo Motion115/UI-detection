@@ -1,10 +1,8 @@
-# https://www.jianshu.com/p/bebfb6170e00
-
 from main import *
 
 if __name__ == '__main__':
     # load current best model
-    checkpoint = torch.load('./checkpoint/enrico_epoch_20.ckpt')
+    checkpoint = torch.load('./checkpoint/enrico_epoch_1.ckpt')
     net.load_state_dict(checkpoint['net'])
     start_epoch = checkpoint['epoch']
     
@@ -19,10 +17,6 @@ if __name__ == '__main__':
                 test_image, test_label = test_image.to(device), test_label.to(device)
                 output = net(test_image)
                 _, predicted = torch.max(output, 1)
-                #print(predicted)
-                #print(test_label.data)
-                #print('预测：' + ' '.join('%5s' % classes[predicted[i]] for i in range(1)))
-                #print('实际：' + ' '.join('%5s' % classes[test_label[i]] for i in range(1)))
 
                 total += test_label.size(0)
                 correct += (predicted == test_label).sum().item()

@@ -1,4 +1,4 @@
-from model_zoo.vgg import VGG
+from model_zoo.vgg import VGG, VGG16
 
 import torch
 import torchvision
@@ -24,12 +24,13 @@ configurations = {
     'learning_rate': 0.001,
     'weight_decay': 0.0005,
     'is_continue': False,
-    'best_model': './checkpoint/enrico_epoch_20.ckpt'
+    'best_model': './checkpoint/enrico_epoch_1.ckpt'
 }
 
 # load on gpu if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 net = VGG(configurations['net']).to(device)
+#net = VGG16(num_classes=20).to(device)
 criterion = nn.CrossEntropyLoss()
 # use adam optimizer
 optimizer = optim.Adam(net.parameters(), lr=configurations['learning_rate'], weight_decay=configurations['weight_decay'])
@@ -72,12 +73,12 @@ def train(train_loader):
     loss = train_loss / total_sample
     return loss
 
-def validation(val_loader, current_net):
+def validation(val_loader):
     val_total, val_correct = 0, 0
     for i, data in tqdm(enumerate(val_loader, 0), desc="validation"):   
         val_image, val_label = data[0], data[2]
         val_image, val_label = val_image.to(device), val_label.to(device)
-        output = net(val_image)
+        output = net(val_image)        
         _, predicted = torch.max(output, 1)
         val_total += val_label.size(0)
         val_correct += (predicted == val_label).sum().item()   
@@ -87,10 +88,11 @@ def validation(val_loader, current_net):
 
 if __name__ == '__main__':
     start_epoch, bench_loss, bench_val_acc = configure_trian(configurations['is_continue'], net, configurations['best_model'])
-
+    
     for epoch in range(start_epoch, start_epoch + configurations['num_epochs']):
         loss = train(train_loader)
-        acc = validation(val_loader = val_loader, current_net = net.state_dict())
+        #loss = train(val_loader)
+        acc = validation(val_loader = val_loader)
         writer.add_scalar("Loss/train", loss, epoch)
 
         print('epoch:{}, loss:{}'.format(epoch + 1, loss))
