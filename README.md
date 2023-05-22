@@ -24,17 +24,19 @@ To access the data, there are two potential ways of aquiring the data. You can a
 
   - 20 epoch training with SGD (a preliminary attempt): top 1 accuracy is **25.90%** (random guess is 5%, since there are 20 classes for whole page view types)
   - This is still a temporary result. According to [Luis A. Leiva, Asutosh Hota and Antti Oulasvirta](https://userinterfaces.aalto.fi/enrico/), the top 1 accuracy for a revised VGG16 model can be as high as 75.8%.
+
 - ViT
-- We believe that ViT's perception method could outperform any model of CNNs.
+  - We believe that ViT's perception method could outperform any model of CNNs.
   - Experiment: TODO!
+
 - Further attempts include:
-- model distillation and performance optimization to enable usage on mobile devices
+  - model distillation and performance optimization to enable usage on mobile devices
   
-- higher accuracy for useablity (as high as possible, including finding out-of-domain dataset to test the generalizability of the model)
+  - higher accuracy for useablity (as high as possible, including finding out-of-domain dataset to test the generalizability of the model)
   
-- newer methods like incorporating attention
+  - newer methods like incorporating attention
   
-- object detection to label all the functionals on the screen
+  - object detection to label all the functionals on the screen
   
 ### OCR for text extraction
 
