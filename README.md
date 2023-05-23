@@ -24,14 +24,16 @@ All the 20 classes are: bare, calculator, camera, chat, editor, form, gallery, l
 
 - VGG16
 
-  - 252 epoch training with Adam: top-k accuracy (1-3-5) is 38.356%, 61.644% and 73.288% respectively. (random guess is 5%, since there are 20 classes for whole page view types)
+  - 252 epoch training with Adam: top-k accuracy (1-3-5) is **38.356%**, 61.644% and 73.288% respectively. (random guess is 5%, since there are 20 classes for whole page view types)
   - According to [Luis A. Leiva, Asutosh Hota and Antti Oulasvirta](https://userinterfaces.aalto.fi/enrico/), the top 1 accuracy for a revised VGG16 model can be as high as 75.8%.
+- VGG-short
+  - 118 epoch training with Adam: top-k accuracy (1-3-5) is **38.699%**, 60.616%, 72.603% respectively.
+  - This VGG-short only has 6 convolutional layers, yet it performs just as good as VGG 16. However, this net is extensively larger in parameter, since the flattened vector is extremely long.
 
 - ViT
-  - We believe that ViT's perception method could outperform any model of CNNs.
   - 55 epoch training with Adam: top 1 accuracy is around **21%**
-- It seems that ViT is prone to underfit, probably because of the large model size and not a lot to "focus" on (attention), we also experienced gradient explosion during training.
-  
+  - It seems that ViT is prone to underfit, probably because of the large model size and not a lot to "focus" on (attention), we also experienced gradient explosion during training.
+
 - Further attempts include:
   - model distillation and performance optimization to enable usage on mobile devices
   
