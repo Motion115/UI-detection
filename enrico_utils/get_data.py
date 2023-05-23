@@ -192,7 +192,7 @@ class EnricoDataset(Dataset):
         return [screenImg, screenWireframeImg, screenLabel]
 
 
-def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, train_shuffle=True, return_class_weights=True):
+def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, train_shuffle=True, return_class_weights=False):
     """Get dataloaders for this dataset.
 
     Args:
@@ -207,7 +207,8 @@ def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, tr
     """
     ds_train = EnricoDataset(data_dir, mode="train", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
     ds_val = EnricoDataset(data_dir, mode="val", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
-
+    '''
+    # we don't sample in this condition
     targets = []
     class_counter = Counter()
     for i in range(len(ds_train)):
@@ -238,15 +239,20 @@ def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, tr
         for w in weights2:
             weights3.append(w / sum(weights2))
         weights = weights3
-
-    dl_train = DataLoader(ds_train, num_workers=num_workers,
-                          sampler=sampler, batch_size=batch_size)
+    dl_train = DataLoader(ds_train, num_workers=num_workers,sampler=sampler, batch_size=batch_size)
+    '''
+    dl_train = DataLoader(ds_train, shuffle=train_shuffle, num_workers=num_workers,batch_size=batch_size)
 
     # dl_train = DataLoader(ds_train, shuffle=train_shuffle, num_workers=num_workers, batch_size=batch_size)
     dl_val = DataLoader(ds_val, shuffle=False,
                         num_workers=num_workers, batch_size=batch_size)
     # dl_val = DataLoader(ds_val, num_workers=num_workers, sampler=sampler, batch_size=batch_size)
 
+    ds_test = EnricoDataset(data_dir, mode="test", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
+
+    dl_test = DataLoader(ds_test, shuffle=False,num_workers=num_workers, batch_size=batch_size)
+
+    '''
     ds_test_img = []
     ds_test_wireframe = []
     dl_test = dict()
@@ -262,9 +268,10 @@ def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, tr
             data_dir, wireframe_noise=True, noise_level=i/10))
     dl_test['wireframe image'] = [DataLoader(test, shuffle=False, num_workers=num_workers,
                                              batch_size=batch_size) for test in ds_test_wireframe]
-
+    '''
     dls = tuple([dl_train, dl_val, dl_test])
     if return_class_weights:
-        return dls, weights
+        #return dls, weights
+        return dls
     else:
         return dls

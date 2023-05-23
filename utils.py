@@ -71,10 +71,13 @@ def test(best_model, test_loader, net, device):
     checkpoint = torch.load(best_model)
     net.load_state_dict(checkpoint['net'])
     
-    testbench = test_loader['image']    
-    correct = 0
+    # testbench = test_loader['image']    
+    correct_t1 = 0
+    correct_t3 = 0
+    correct_t5 = 0
     total = 0
 
+    '''
     with torch.no_grad():
         for i, testset in tqdm(enumerate(testbench, 0), desc='iters'): 
             for j, data in tqdm(enumerate(testset, 0), desc='batch testing'):
@@ -85,5 +88,25 @@ def test(best_model, test_loader, net, device):
                 total += test_label.size(0)
                 correct += (predicted == test_label).sum().item()
             print('Current Acc:', 100 * correct / total, '%')
+    '''
+
+    with torch.no_grad():
+        for i, data in tqdm(enumerate(test_loader, 0), desc='iters'): 
+            test_image, test_label = data[0], data[2]
+            test_image, test_label = test_image.to(device), test_label.to(device)
+            output = net(test_image)
+            # output is a 20-dim vector, extract the index of the top 5 values
+            _, predicted = torch.topk(output, 5, dim=1)
+            # calculate top-1, top-3, top-5 accuracy
+            total += test_label.size(0)
+            for j in range(test_label.size(0)):
+                if test_label[j] in predicted[j]:
+                    correct_t5 += 1
+                    if test_label[j] in predicted[j][:3]:
+                        correct_t3 += 1
+                        if test_label[j] == predicted[j][0]:
+                            correct_t1 += 1
     
-    print('Acc: %.3f%%' % (100 * correct / total))
+    print('top1-acc: %.3f%%' % (100 * correct_t1 / total))
+    print('top3-acc: %.3f%%' % (100 * correct_t3 / total))
+    print('top5-acc: %.3f%%' % (100 * correct_t5 / total))
