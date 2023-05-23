@@ -61,7 +61,7 @@ class EnricoDataset(Dataset):
         self.img_dim_y = img_dim_y
         self.seq_len = seq_len
         csv_file = os.path.join(data_dir, "design_topics.csv")
-        self.img_dir = os.path.join(data_dir, "screenshots")
+        self.img_dir = os.path.join(data_dir, "screenshot_std")
         self.wireframe_dir = os.path.join(data_dir, "wireframes")
         self.hierarchy_dir = os.path.join(data_dir, "hierarchies")
         with open(csv_file, "r") as f:
@@ -72,12 +72,25 @@ class EnricoDataset(Dataset):
         IGNORES = set(["50105", "50109"])
         example_list = [
             e for e in example_list if e['screen_id'] not in IGNORES]
-
+        # example_list is in the form {"screen_id":'id', "topic":'topic name'}
         self.example_list = example_list
 
-        keys = list(range(len(example_list)))
+        # this is to make sure that the shuffle is the same for all runs
+        shuffle_file = os.path.join(data_dir, "shuffle.csv")
+        # read the shuffle.csv
+        with open(shuffle_file, newline='') as f:
+            reader = csv.reader(f)
+            data = list(reader)
+            # data[0]'s data is str, so we need to convert it to int
+            data[0] = [int(i) for i in data[0]]
+            keys = data[0]
+        if len(example_list) != len(keys):
+            raise Exception(
+                "Length of example list and shuffle list do not match")
+        
+        # keys = list(range(len(example_list)))
         # shuffle and create splits
-        random.Random(random_seed).shuffle(keys)
+        # random.Random(random_seed).shuffle(keys)
 
         if mode == "train":
             # train split is at the front
@@ -123,6 +136,7 @@ class EnricoDataset(Dataset):
         self.idx2Topic = idx2Topic
         self.topic2Idx = topic2Idx
 
+        # for UI types labels
         UI_TYPES = ["Text", "Text Button", "Icon", "Card", "Drawer", "Web View", "List Item", "Toolbar", "Bottom Navigation", "Multi-Tab", "List Item", "Toolbar", "Bottom Navigation", "Multi-Tab",
                     "Background Image", "Image", "Video", "Input", "Number Stepper", "Checkbox", "Radio Button", "Pager Indicator", "On/Off Switch", "Modal", "Slider", "Advertisement", "Date Picker", "Map View"]
 

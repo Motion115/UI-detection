@@ -66,7 +66,7 @@ def vgg_operations(is_test: bool = False):
     vgg_config = {
         'net': 'VGG16',
         'batch_size': 8,
-        'num_epochs': 2,
+        'num_epochs': 3,
         'img_dim': 256,
         'learning_rate': 0.001,
         'weight_decay': 0.0005,
@@ -94,7 +94,7 @@ def vit_operations(is_test: bool = False):
     operations(vit_config, net, is_test=is_test)
 
 if __name__ == '__main__':
-    vgg_operations(is_test = True)
+    vgg_operations(is_test = False)
     
     
     

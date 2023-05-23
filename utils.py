@@ -42,11 +42,6 @@ def validation(device, val_loader, net):
     for i, data in tqdm(enumerate(val_loader, 0), desc="validation"):   
         val_image, val_label = data[0], data[2]
         val_image, val_label = val_image.to(device), val_label.to(device)
-
-        output = net.get_embedding(val_image)
-        print(output.shape)
-        exit()
-
         output = net(val_image)        
         _, predicted = torch.max(output, 1)
         val_total += val_label.size(0)
