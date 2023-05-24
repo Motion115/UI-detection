@@ -104,6 +104,10 @@ class EnricoDataset(Dataset):
             # test split is at the end
             start_index = int(len(example_list) * (train_split + val_split))
             stop_index = len(example_list)
+        elif mode == "all":
+            # use all data
+            start_index = 0
+            stop_index = len(example_list)
 
         # only keep examples in the current split
         keys = keys[start_index:stop_index]
@@ -142,6 +146,7 @@ class EnricoDataset(Dataset):
 
         idx2Label = {}
         label2Idx = {}
+        
 
         for i in range(len(UI_TYPES)):
             idx2Label[i] = UI_TYPES[i]
@@ -252,6 +257,9 @@ def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, tr
 
     dl_test = DataLoader(ds_test, shuffle=False,num_workers=num_workers, batch_size=batch_size)
 
+    ds_all = EnricoDataset(data_dir=data_dir, mode="all", img_dim_x=img_dim_x, img_dim_y=img_dim_y)
+    dl_all = DataLoader(ds_all, shuffle=False, num_workers=num_workers, batch_size=batch_size)
+
     '''
     ds_test_img = []
     ds_test_wireframe = []
@@ -269,7 +277,7 @@ def get_dataloader(data_dir, img_dim_x, img_dim_y, batch_size, num_workers=0, tr
     dl_test['wireframe image'] = [DataLoader(test, shuffle=False, num_workers=num_workers,
                                              batch_size=batch_size) for test in ds_test_wireframe]
     '''
-    dls = tuple([dl_train, dl_val, dl_test])
+    dls = tuple([dl_train, dl_val, dl_test, dl_all])
     if return_class_weights:
         #return dls, weights
         return dls

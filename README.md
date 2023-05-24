@@ -16,7 +16,7 @@ Key dependencies include torch(2.0.0+cu117), torchvision(0.15.1), tqdm, and nump
 
 To access the data, there are two potential ways of aquiring the data. You can attempt to download the data from the [enrico repository](https://github.com/luileito/enrico). Alternatively, if you are using Linux or WSL, you can access the dataset by using the **download_data.sh** in enrico_utils folder. The enrico_utils folder contains a very small subset of the [MultiBench](https://github.com/pliang279/MultiBench) toolkit, which stands for Multiscale Benchmarks for Multimodal Representation Learning. Check out its dedicated repo for more details.
 
-All the 20 classes are: bare, calculator, camera, chat, editor, form, gallery, list, login, maps, mediaplayer, menu, modal, news, other, profile, search, settings, terms, and tutorial. (encoded as from 0-19)
+All the 20 classes are: bare, dialer, camera, chat, editor, form, gallery, list, login, maps, mediaplayer, menu, modal, news, other, profile, search, settings, terms, and tutorial. (encoded as from 0-19)
 
 ## Models
 
@@ -25,7 +25,12 @@ All the 20 classes are: bare, calculator, camera, chat, editor, form, gallery, l
 - VGG16
 
   - 252 epoch training with Adam: top-k accuracy (1-3-5) is **38.356%**, 61.644% and 73.288% respectively. (random guess is 5%, since there are 20 classes for whole page view types)
+  
   - According to [Luis A. Leiva, Asutosh Hota and Antti Oulasvirta](https://userinterfaces.aalto.fi/enrico/), the top 1 accuracy for a revised VGG16 model can be as high as 75.8%.
+  
+    top1-acc: 79.110%
+    top3-acc: 95.890%
+    top5-acc: 98.630%
 - VGG-short
   - 118 epoch training with Adam: top-k accuracy (1-3-5) is **38.699%**, 60.616%, 72.603% respectively.
   - This VGG-short only has 6 convolutional layers, yet it performs just as good as VGG 16. However, this net is extensively larger in parameter, since the flattened vector is extremely long.
