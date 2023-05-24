@@ -8,7 +8,7 @@ from PIL import Image
 
 base_path = './enrico_corpus/screenshot_std/'
 target_path = './enrico_corpus/texts/'
-'''
+
 # list files in base_path
 files = os.listdir(base_path)
 
@@ -25,7 +25,6 @@ for f in tqdm(files):
     f = f.split('.')[0]
     df.to_csv(os.path.join(target_path, f + '.csv'), index=False)
 
-'''
 out_files = os.listdir(target_path)
 for f in tqdm(out_files):
     df = pd.read_csv(os.path.join(target_path, f))
