@@ -41,9 +41,15 @@ However, since we are only using the embedding from this CV model,there is still
 
 ### OCR for text extraction
 
-There are numerours models of this kind. For keeping it simple, we do not attempt to retrain one, instead, we intend to use [easyOCR](https://github.com/JaidedAI/EasyOCR) as our model for extracting words from images.
+There are numerours models of this kind. The information we need from this process is the content on each screen and the position of the text. [easyOCR](https://github.com/JaidedAI/EasyOCR) seems fit for this task. Granted, the words obviously needed some semantic grouping, but to keep it simple, we should probably do it in the future.
 
-Granted, the words obviously needed some semantic grouping, but to keep it simple, we should probably do it in the future.
+We record the top-left position of the text and the content of the text in csv files. The results will be made available when possible. To get a unifided position, we first reshape all the UI pictures to 800 * 400 (heigth * width). Besides, to avoid grasping information that is not context-dependent (eg. time, battery life etc.), we stripped the OCR result with height below 20px.
+
+After that, we need to generate the embedding for the texts. However, this is difficult since there are errors (quite a few) in the recognition, so pretrained models such as word2vec would fail to generate the embedding.
+
+For the record, the pre-trained model we use is from [gensim-data](https://github.com/RaRe-Technologies/gensim-data). To be specific, the **glove-wiki-gigaword-100** model. This might not be the best choice, yet 400000 distict words is good-enough to validate the idea.
+
+To address the no embedding issue, we ran a word-by-word sanity check which replaces the errors (mostly spelling error) with a word from the glove dictionary. After that, for each UI sample, we generated an embedding for that sample with dimension **100**. In case of multiple words, we used average embedding method, and for no-word cases, we simply leave the embedding as a zero vector.
 
 ### Embedding (or modal fusion)
 
