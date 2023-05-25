@@ -22,6 +22,7 @@ def operations(config: dict, net):
     (train_loader, val_loader, test_loader) = get_dataloader("enrico_corpus", 
         img_dim_x=config['img_dim'], img_dim_y=config['img_dim'], 
         batch_size=config['batch_size'])
+
     # initialize net
     net.to(device)
     

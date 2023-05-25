@@ -1,21 +1,15 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
-class Fusion(nn):
+class Fusion(nn.Module):
     def __init__(self):
         super(Fusion, self).__init__()
         self.fusion = nn.Sequential(
             nn.Linear(868, 600),
             nn.ReLU(),
-            nn.Linear(600, 600),
+            nn.Linear(600, 300),
             nn.ReLU(),
-            nn.Linear(600, 400),
-            nn.ReLU(),
-            nn.Linear(400, 400),
-            nn.ReLU(),
-            nn.Linear(400, 300),
-            nn.ReLU(),
-            nn.Linear(300, 300)
+            nn.Linear(300, 150)
         )
 
     def forward(self, x):

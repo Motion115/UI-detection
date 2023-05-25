@@ -7,16 +7,20 @@ import os
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
-from enrico_utils.get_data import get_dataloader
+from enrico_utils.get_embedding_data import get_embedding_dataloader
 
 def train(device, train_loader, net, optimizer, criterion):
     train_loss = 0.0
     for i, data in tqdm(enumerate(train_loader, 0), desc="iters"):
         anchor, positive, negative = data[0], data[1], data[2]
         anchor, positive, negative = anchor.to(device), positive.to(device), negative.to(device)
+        
+        anchor_to_embedding = net(anchor)
+        positive_to_embedding = net(positive)
+        negative_to_embedding = net(negative)
+        
         optimizer.zero_grad()
-        loss = criterion(anchor, positive, negative)
-
+        loss = criterion(anchor_to_embedding, positive_to_embedding, negative_to_embedding)
         loss.backward()
         optimizer.step()
 
@@ -43,13 +47,11 @@ def operations(config: dict, net):
     writer = SummaryWriter()
     # load on gpu if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    criterion = TripletLoss()
-    
-    '''
-    TODO: load the embedded data
-    '''
+    criterion = nn.TripletMarginLoss()
+    #criterion = TripletLoss()
+
     # load data
-    (train_loader, val_loader, test_loader) = get_dataloader("enrico_corpus")
+    dataloader = get_embedding_dataloader("enrico_corpus", batch_size=config['batch_size'])
     # initialize net
     net.to(device)
     
@@ -57,16 +59,12 @@ def operations(config: dict, net):
 
     # use adam optimizer
     optimizer = optim.Adam(net.parameters(), lr=config['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=config['weight_decay'])
-    
-    start_epoch, bench_loss, bench_val_acc = configure_trian(config['is_continue'], net, config['continue_on'])
+
+    start_epoch, bench_loss = configure_trian(config['is_continue'], net, config['continue_on'])
     
     for epoch in range(start_epoch, start_epoch + config['num_epochs']):
-        '''
-        TODO: new train function
-        '''
-        loss = train(device, train_loader, net, optimizer, criterion)
+        loss = train(device, dataloader, net, optimizer, criterion)
         writer.add_scalar("Loss/train", loss, epoch)
-
         writer.flush()
 
         print('epoch:{}, loss:{}'.format(epoch + 1, loss * 100))
@@ -90,7 +88,7 @@ def operations(config: dict, net):
 
 
 def fusemodel():
-    vgg_config = {
+    fuse_config = {
         'net': 'fusemodel',
         'batch_size': 64,
         'num_epochs': 300,
@@ -101,7 +99,7 @@ def fusemodel():
         'continue_on': './weights/fusemodel/fuse_epoch_1.ckpt',
     }
     net = Fusion()
-    operations(vgg_config, net)
+    operations(fuse_config, net)
 
 if __name__ == '__main__':
     fusemodel()

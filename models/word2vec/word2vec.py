@@ -26,7 +26,7 @@ for file in tqdm(files):
     vector = np.zeros((1, 100))
     total_texts = len(texts)
     if total_texts == 0:
-        out_data.append({'id': file.split(".")[0], 'vector': vector})
+        out_data.append({'id': file.split(".")[0], 'nlp_embedding': vector})
     else:
         # for each text, get the vector
         for text in texts:
@@ -41,9 +41,8 @@ for file in tqdm(files):
         if total_texts != 0:
             # calculate the mean vector
             vector /= total_texts
-        out_data.append({'id': file.split(".")[0], 'vector': vector})
+        out_data.append({'id': file.split(".")[0], 'nlp_embedding': vector})
 
 # save the out_data as pkl file
-# create a pandas dataframe first
-df = pd.DataFrame(out_data)
-df.to_pickle(os.path.join(out_path, "nlp_embedding.pkl"))
+with open(os.path.join(out_path, "nlp_embedding.pkl"), 'wb') as f:
+    pickle.dump(out_data, f)

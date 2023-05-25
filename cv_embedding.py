@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 import numpy as np
 from tqdm import tqdm
+import os
 
 dataset = EnricoDataset("enrico_corpus", mode='all', img_dim_x=256, img_dim_y=256)
 
@@ -40,5 +41,5 @@ for i in tqdm(range(len(ids))):
     pic_embed_dict.append({"id":actual_id, "label_id": label, "label": actual_class, "embedding": embedding})
 
 # save pic_embed_dict as pkl file
-df = pd.DataFrame(pic_embed_dict)
-df.to_pickle("./enrico_corpus/vision_embedding.pkl")
+with open(os.path.join("./enrico_corpus/vision_embedding.pkl"), 'wb') as f:
+    pickle.dump(pic_embed_dict, f)

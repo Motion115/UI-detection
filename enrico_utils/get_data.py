@@ -156,6 +156,7 @@ class EnricoDataset(Dataset):
         self.label2Idx = label2Idx
         self.ui_types = UI_TYPES
 
+
     def __len__(self):
         """Get number of samples in dataset."""
         return len(self.keys)
