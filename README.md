@@ -22,32 +22,23 @@ All the 20 classes are: bare, dialer, camera, chat, editor, form, gallery, list,
 
 ### Pretrained CV models
 
-- VGG16
+The feature space for UIs are much smaller compared to natural images. In experiment (3 experiments), we found out that VGG 16 (not exactly the original, but almost the same) perform just as well as shallower VGG (by cutting the convolution layers in half) and much better than ViT.
 
-  - 252 epoch training with Adam: top-k accuracy (1-3-5) is **38.356%**, 61.644% and 73.288% respectively. (random guess is 5%, since there are 20 classes for whole page view types)
-  
-  - According to [Luis A. Leiva, Asutosh Hota and Antti Oulasvirta](https://userinterfaces.aalto.fi/enrico/), the top 1 accuracy for a revised VGG16 model can be as high as 75.8%.
-  
-    top1-acc: 79.110%
-    top3-acc: 95.890%
-    top5-acc: 98.630%
-- VGG-short
-  - 118 epoch training with Adam: top-k accuracy (1-3-5) is **38.699%**, 60.616%, 72.603% respectively.
-  - This VGG-short only has 6 convolutional layers, yet it performs just as good as VGG 16. However, this net is extensively larger in parameter, since the flattened vector is extremely long.
+Here are the results (trained with the same split, with train:val:test = 65:15:20, as [Luis A. Leiva, Asutosh Hota and Antti Oulasvirta](https://userinterfaces.aalto.fi/enrico/)) did in their paper:
 
-- ViT
-  - 55 epoch training with Adam: top 1 accuracy is around **21%**
-  - It seems that ViT is prone to underfit, probably because of the large model size and not a lot to "focus" on (attention), we also experienced gradient explosion during training.
+|                      | Parameter Size (MB) | Top-1 Acc (%) | Top-3 Acc (%) | Top-5 Acc (%) |
+| -------------------- | ------------------- | ------------- | ------------- | ------------- |
+| VGG16                | **154**             | 38.356        | **61.644**    | **73.288**    |
+| VGG16-shallow        | 403                 | **38.699**    | 60.616        | 72.603        |
+| ViT                  | 327                 | ~21           | -             | -             |
+| VGG16 (Enrico paper) | -                   | 75.8          | 88.4          | 92.9          |
 
-- Further attempts include:
-  - model distillation and performance optimization to enable usage on mobile devices
-  
-  - higher accuracy for useablity (as high as possible, including finding out-of-domain dataset to test the generalizability of the model)
-  
-  - newer methods like incorporating attention
-  
-  - object detection to label all the functionals on the screen
-  
+Note that in this split, we only trained on the train set, validation set is not used as training data. Thus, due to the imbalance of between classes, the results are pretty much split-dependent. Because of that, the author's of Enrico must have experimented several splits to get a "good split" which evenly split all the classes in all three sets.
+
+To replicate the result in the paper, and to provide an embedding model, we used validation split from our previous split as supervision, and **all data** as training set (not a good way if you are using the CV model only). This is prone to overfitting the data and have weak generalization capability. In this training version, we achieved an accuracy (top-1, 3, 5 respectively) of **79.110%**, 95.890% and 98.630%. According to the loss and validation accuracy, the model have converged since that.
+
+However, since we are only using the embedding from this CV model,there is still opportunity to correct the potential overfitting after going through unsupervised loss (mention below) for embedding fusion and downsampling. We extract the penultimate layer (an fc-layer) before the output layer as our embedding output. The dimension is set to **768**.
+
 ### OCR for text extraction
 
 There are numerours models of this kind. For keeping it simple, we do not attempt to retrain one, instead, we intend to use [easyOCR](https://github.com/JaidedAI/EasyOCR) as our model for extracting words from images.
