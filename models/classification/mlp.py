@@ -1,22 +1,20 @@
-# basic mlp for classification in torch
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-class MLP(nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super(MLP, self).__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(input_dim, 100),
+class classifierMLP(nn.Module):
+    def __init__(self):
+        super(classifierMLP, self).__init__()
+        self.seq_layers = nn.Sequential(
+            nn.Linear(150, 100),
             nn.ReLU(),
             nn.Linear(100, 50),
             nn.ReLU(),
             nn.Linear(50, 50),
             nn.ReLU(),
-            nn.Linear(50, output_dim)
+            nn.Linear(50, 20)
         )
 
     def forward(self, x):
-        x = self.layers(x)
+        x = self.seq_layers(x)
         return x

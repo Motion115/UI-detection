@@ -27,6 +27,7 @@ def train(device, train_loader, net, optimizer, criterion):
         optimizer.zero_grad()
 
         outputs = net(inputs)
+
         loss = criterion(outputs, labels)
 
         loss.backward()

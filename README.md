@@ -1,6 +1,6 @@
 # UI2Vec: Towards Multimodal Embedding on UI classification and description generation
 
-## What is the fuss?
+## What is all the fuss?
 
 Current UI classification systems often use computer vision only, and their accuracy is usually about 0.75, far from usable in real life scenarios. Texts on UI screens can often explicitly present the functionality of the page, therefore an ideal source of data that we should not miss. In this work, we attempt to utilize the two modalities: vision and text, for embedding-based UI classification.
 
@@ -8,7 +8,7 @@ Besides, the texts extracted from images can also be a great source to try to en
 
 ## Dependencies
 
-Key dependencies include torch(2.0.0+cu117), torchvision(0.15.1), tqdm, and numpy.
+Key dependencies include python(3.8), torch(2.0.0+cu117/cu118), torchvision(0.15.1), gensim etc.
 
 ## Dataset
 
@@ -53,10 +53,37 @@ To address the no embedding issue, we ran a word-by-word sanity check which repl
 
 ### Embedding (or modal fusion)
 
-Train it on potentially two scopes:
+After we aquired the CV and NLP embedding, the next step to do is to train the actual embedding for a certain UI.
 
-- simple classification, with classes used as supervision (cross-entropy loss)
-- dimensional embedding, first augment the dataset by creating <base, similar, far> tuples, then try to minimize base and similar (belonging to the same group of class) and maximize base, far (belonging to different class). If we have N training samples, each class select M as similar, and a random other class UI (19), then the training set size would be N * M * 19, very large in scale indeed.
+Concatenation is the simplest way of fusion. We did the concatenation based on normalized embeddings, resulting in a 868-dimensional vector.
+
+After concatenation, we made a dataset augmentation, to create the training data for our encoder. The training is based on triplet-loss, thus we need to find an anchor vector, a positive vector and a negative vector. Here, to balance out the class count differences, we expanded every class to 1000 entries, making it a total of 20,000 training samples. The augmentation algorithm is as follow:
+
+```pseudocode
+for ui_class in classes:
+	for each anchor in ui_class:
+		randomly choose another item (positive) as the positive vector
+		randomly choose another ui_class, from other_class, randomly choose an item as negative
+		build sample tuple <anchor, positive, negative>
+		if all the items have drained in the ui_class, yet the total sample has not reach 1000:
+			start again from the first anchor
+		else:
+			continue to another class
+```
+
+Train the new dataset until converge with a 3-layer (including input and output) MLP. The output embedding will have **150** dimensions.
+
+### Downstream Tasks
+
+The downstream task include classification of UIs, retrieval of similar UIs and more.
+
+In this example, we use an SVM model to classify the UIs. We splitted 20% of the samples as test set, and used scikit-learn's vanilla SVC(probability=True) to train the model.
+
+We are happy to report that accuracy can be as high as 95.55%, and top-3 accuracy is 100%. For this accuracy, it is totaly useable in real-life applications.
+
+Note that this result is only representative on Enrico dataset, a relatively small dataset, thus the model may not be generalizable. However, it is testimony that the embedding method does work, since it boosted the classification accuracy greatly.
+
+Further work include abalation study on whether either nlp embedding or cv embedding can be deleted, or if the encoder part is actually useful.
 
 ### NLG (Natual Language Generation)
 

@@ -32,7 +32,7 @@ for i in tqdm(range(len(corpus))):
     embedding = embedding.to(device)
     embedding_150 = net(embedding)
     embedding_numpy = embedding_150.cpu().detach().numpy()
-    embed_150_list.append({"id":id, "label_id": label_id, "label": label, "torch_embedding":embedding_150, "numpy_embedding": embedding_numpy})
+    embed_150_list.append({"id":id, "label_id": label_id, "label": label, "numpy_embedding": embedding_numpy})
 
 # save embed_150_list as pkl file
 with open(os.path.join("./enrico_corpus/enrico_embedding_150.pkl"), 'wb') as f:
