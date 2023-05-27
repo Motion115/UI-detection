@@ -6,6 +6,15 @@ Current UI classification systems often use computer vision only, and their accu
 
 Besides, the texts extracted from images can also be a great source to try to enable machines to dynamically describe the what abouts on the screen. If that has been made a reality, it could be potentially a great way of increasing accessibility among the elders and the impaired who might need the assistance to understand a UI page.
 
+## Folders
+
+- **enrico_utils**: everything that is related to the manipulation of the enrico dataset, including embedding dataset generation, dataloader and source data downloader
+- **inference**: inference of the models, including GloVe, VGG16 and UI2Vec
+- **models**: every model implementation, in PyTorch
+- **test**: for testing the performance of UI2Vec model
+
+The training and evaluation of vision models and UI2Vec is at the root folder files.
+
 ## Dependencies
 
 Key dependencies include python(3.8), torch(2.0.0+cu117/cu118), torchvision(0.15.1), gensim etc.
@@ -30,7 +39,7 @@ Here are the results (trained with the same split, with train:val:test = 65:15:2
 | -------------------- | ------------------- | ------------- | ------------- | ------------- |
 | VGG16                | **154**             | 38.356        | **61.644**    | **73.288**    |
 | VGG16-shallow        | 403                 | **38.699**    | 60.616        | 72.603        |
-| ViT                  | 327                 | ~21           | -             | -             |
+| ViT                  | 327                 | 20.5          | 44.5          | 62.0          |
 | VGG16 (Enrico paper) | -                   | 75.8          | 88.4          | 92.9          |
 
 Note that in this split, we only trained on the train set, validation set is not used as training data. Thus, due to the imbalance of between classes, the results are pretty much split-dependent. Because of that, the author's of Enrico must have experimented several splits to get a "good split" which evenly split all the classes in all three sets.

@@ -19,7 +19,7 @@ def operations(config: dict, net):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     criterion = nn.CrossEntropyLoss()
 
-    (train_loader, val_loader, test_loader) = get_dataloader("enrico_corpus", 
+    train_loader, val_loader, test_loader, all = get_dataloader("enrico_corpus", 
         img_dim_x=config['img_dim'], img_dim_y=config['img_dim'], 
         batch_size=config['batch_size'])
 
@@ -165,7 +165,7 @@ def vit_operations(is_test=False):
         'weight_decay': 1e-08,
         'is_continue': False,
         'weights': './weights/vit/',
-        'continue_on': './weights/vit/enrico_epoch_123.ckpt',
+        'continue_on': './weights/vit/enrico_epoch_143.ckpt',
         'is_test': False
     }
     if is_test:

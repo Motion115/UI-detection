@@ -51,7 +51,7 @@ def operations(config: dict, net):
     #criterion = TripletLoss()
 
     # load data
-    dataloader = get_embedding_dataloader("enrico_corpus", batch_size=config['batch_size'])
+    dataloader = get_embedding_dataloader("enrico_corpus", config['source_data'], batch_size=config['batch_size'])
     # initialize net
     net.to(device)
     
@@ -95,8 +95,10 @@ def fusemodel():
         'learning_rate': 0.001,
         'weight_decay': 1e-08,
         'is_continue': False,
-        'weights': './weights/fusemodel/',
-        'continue_on': './weights/fusemodel/fuse_epoch_1.ckpt',
+        # 'source_data': 'enrico_expanded_embedding.pkl',
+        'source_data': 'enrico_expanded_embedding_nlp.pkl',
+        'weights': './weights/fusemodel_no_cv/',
+        'continue_on': './weights/fusemodel/fuse_no_cv_epoch_1.ckpt',
     }
     net = Fusion()
     operations(fuse_config, net)

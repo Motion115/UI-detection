@@ -6,8 +6,16 @@ from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
+config = {
+    'all': "./enrico_corpus/150-embds/enrico_embedding_150.pkl",
+    'cv_only': "./enrico_corpus/150-embds/enrico_embedding_cv_150.pkl",
+    'nlp_only': "./enrico_corpus/150-embds/enrico_embedding_nlp_150.pkl"
+}
+
+mode = 'nlp_only'
+
 # read
-with open(os.path.join("./enrico_corpus/enrico_embedding_150.pkl"), 'rb') as f:
+with open(os.path.join(config[mode]), 'rb') as f:
     corpus = pickle.load(f)
 
 # create a numpy 2-D array, with each row as a 150-dim vector
@@ -33,10 +41,10 @@ print("Accuracy: %.2f%%" % (accuracy_score(y_test, y_pred) * 100.0))
 
 # save the model
 import joblib
-joblib.dump(clf, 'svm_model.pkl')
+joblib.dump(clf, './weights/ML-classification/' + mode + "_svm.pkl")
 
 # load the model
-loaded = joblib.load('svm_model.pkl')
+loaded = joblib.load('./weights/ML-classification/' + mode + "_svm.pkl")
 # calculalte the top-k accuracy
 y_pred = loaded.predict_proba(X_test)
 # calculate top-2 accuracy

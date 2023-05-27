@@ -3,7 +3,15 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-pkl_file = os.path.join("./enrico_corpus/enrico_embedding.pkl")
+config = {
+    'all': ['enrico_embedding.pkl', 'enrico_expanded_embedding.pkl'],
+    'cv_only': ['enrico_embedding_cv.pkl', 'enrico_expanded_embedding_cv.pkl'],
+    'nlp_only': ['enrico_embedding_nlp.pkl', 'enrico_expanded_embedding_nlp.pkl']
+}
+
+mode = "cv_only"
+
+pkl_file = os.path.join("./enrico_corpus/868-embds/" + config[mode][0])
 #read the pkl file
 with open(pkl_file, 'rb') as f:
     corpus = pickle.load(f)
@@ -48,6 +56,6 @@ for key, value in tqdm(corpus_dict.items()):
             break
 
 # save expanded_corpus as pkl file
-with open(os.path.join("./enrico_corpus/enrico_expanded_embedding.pkl"), 'wb') as f:
+with open(os.path.join("./enrico_corpus/" + config[mode][1]), 'wb') as f:
     pickle.dump(expanded_corpus, f)
 

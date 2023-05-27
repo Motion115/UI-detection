@@ -88,7 +88,7 @@ def get_learned_embedding_dataset(data_dir, batch_size, num_workers=0):
 
 
 class EnricoEmbeddingDataset(Dataset):    
-    def __init__(self, data_dir, random_seed=42):
+    def __init__(self, data_dir, file_name, random_seed=42):
         """Instantiate ENRICO_embedding dataset.
         Args:
             data_dir (str): Data directory.
@@ -97,7 +97,7 @@ class EnricoEmbeddingDataset(Dataset):
         super(EnricoEmbeddingDataset, self).__init__()
 
         # load data
-        pkl_file = os.path.join(data_dir, "enrico_expanded_embedding.pkl")
+        pkl_file = os.path.join(data_dir, file_name)
         with open(pkl_file, 'rb') as f:
             corpus = pickle.load(f)
         # stable randon seed, so that the split is the same for all runs
@@ -132,7 +132,7 @@ class EnricoEmbeddingDataset(Dataset):
         return [self.anchor_embeddings[idx], self.positive_embeddings[idx], self.negative_embeddings[idx]]
 
 
-def get_embedding_dataloader(data_dir, batch_size, num_workers=0):
+def get_embedding_dataloader(data_dir, file_name, batch_size, num_workers=0):
     """Get dataloaders for this dataset.
 
     Args:
@@ -144,6 +144,6 @@ def get_embedding_dataloader(data_dir, batch_size, num_workers=0):
         tuple: Dataloader for dataset
     """
 
-    dataset = EnricoEmbeddingDataset(data_dir)
+    dataset = EnricoEmbeddingDataset(data_dir, file_name)
     dataloader = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size)
     return dataloader
