@@ -1,23 +1,27 @@
-# UI2Vec: Towards Multimodal Embedding on UI classification and description generation
+# **UI2Vec: A Multimodal Embedding Method for Robust UI Classification**
 
-## What is all the fuss?
+## Introduction
 
-Current UI classification systems often use computer vision only, and their accuracy is usually about 0.75, far from usable in real life scenarios. Texts on UI screens can often explicitly present the functionality of the page, therefore an ideal source of data that we should not miss. In this work, we attempt to utilize the two modalities: vision and text, for embedding-based UI classification.
+Current UI classification systems often use computer vision only, and their accuracy is usually about 0.75, far from usable in real life scenarios. Meanwhile, texts on UI screens offers rich context about the functionality of the UI page, yet this information is not captured for most UI classification systems. In this work, our main contributions are:
 
-Besides, the texts extracted from images can also be a great source to try to enable machines to dynamically describe the what abouts on the screen. If that has been made a reality, it could be potentially a great way of increasing accessibility among the elders and the impaired who might need the assistance to understand a UI page.
+- Propose that UI semantics consists of two parts: visual and textual;
+- A multimodal embedding method that transform UI Images to 150-dimensional embedding vector;
+- An evaluation with classification as the downstream task to evaluate the performance of the method.
 
 ## Folders
 
-- **enrico_utils**: everything that is related to the manipulation of the enrico dataset, including embedding dataset generation, dataloader and source data downloader
+- **enrico\_utils**: everything that is related to the manipulation of the enrico dataset, including embedding dataset generation, dataloader and source data downloader
 - **inference**: inference of the models, including GloVe, VGG16 and UI2Vec
-- **models**: every model implementation, in PyTorch
+- **models**: model implementation in PyTorch
 - **test**: for testing the performance of UI2Vec model
 
-The training and evaluation of vision models and UI2Vec is at the root folder files.
+The training and evaluation code for the vision models and UI2Vec is at the root folder.
+
+> If you intend to reproduce the results, please download the Enrico dataset and uncompress it into the enrico\_corpus folder. Note that this code is not yet optimized for easy reproduction.
 
 ## Dependencies
 
-Key dependencies include python(3.8), torch(2.0.0+cu117/cu118), torchvision(0.15.1), gensim etc.
+Key dependencies include python(3.8), torch(2.0.0+cu117/cu118), gensim etc. We will update a requirements.txt file in the future.
 
 ## Dataset
 
